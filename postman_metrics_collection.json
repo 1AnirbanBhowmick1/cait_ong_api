@@ -1,0 +1,307 @@
+{
+  "info": {
+    "name": "Metrics API",
+    "description": "Collection for testing the Metrics API endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Get Metrics for Company",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/metrics?company_id=1",
+          "host": ["{{base_url}}"],
+          "path": ["api", "metrics"],
+          "query": [
+            {
+              "key": "company_id",
+              "value": "1"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Metrics by Period End Date",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/metrics?company_id=1&period_end_date=2024-12-31",
+          "host": ["{{base_url}}"],
+          "path": ["api", "metrics"],
+          "query": [
+            {
+              "key": "company_id",
+              "value": "1"
+            },
+            {
+              "key": "period_end_date",
+              "value": "2024-12-31"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Metrics by Quarter",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/metrics?company_id=1&period=2024-Q4",
+          "host": ["{{base_url}}"],
+          "path": ["api", "metrics"],
+          "query": [
+            {
+              "key": "company_id",
+              "value": "1"
+            },
+            {
+              "key": "period",
+              "value": "2024-Q4"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Specific Metrics",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/metrics?company_id=1&metric=oil_production,gas_production",
+          "host": ["{{base_url}}"],
+          "path": ["api", "metrics"],
+          "query": [
+            {
+              "key": "company_id",
+              "value": "1"
+            },
+            {
+              "key": "metric",
+              "value": "oil_production,gas_production"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Filter by Basin",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/metrics?company_id=1&basin=Permian Basin",
+          "host": ["{{base_url}}"],
+          "path": ["api", "metrics"],
+          "query": [
+            {
+              "key": "company_id",
+              "value": "1"
+            },
+            {
+              "key": "basin",
+              "value": "Permian Basin"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Filter by Segment",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/metrics?company_id=1&segment=Upstream",
+          "host": ["{{base_url}}"],
+          "path": ["api", "metrics"],
+          "query": [
+            {
+              "key": "company_id",
+              "value": "1"
+            },
+            {
+              "key": "segment",
+              "value": "Upstream"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Filter by Gross or Net",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/metrics?company_id=1&gross_or_net=gross",
+          "host": ["{{base_url}}"],
+          "path": ["api", "metrics"],
+          "query": [
+            {
+              "key": "company_id",
+              "value": "1"
+            },
+            {
+              "key": "gross_or_net",
+              "value": "gross"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Filter by Minimum Confidence",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/metrics?company_id=1&confidence_min=0.9",
+          "host": ["{{base_url}}"],
+          "path": ["api", "metrics"],
+          "query": [
+            {
+              "key": "company_id",
+              "value": "1"
+            },
+            {
+              "key": "confidence_min",
+              "value": "0.9"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Paginated Results",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/metrics?company_id=1&limit=20&offset=0",
+          "host": ["{{base_url}}"],
+          "path": ["api", "metrics"],
+          "query": [
+            {
+              "key": "company_id",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            },
+            {
+              "key": "offset",
+              "value": "0"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Sort by Confidence Ascending",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/metrics?company_id=1&sort_by=extraction_confidence_score:asc",
+          "host": ["{{base_url}}"],
+          "path": ["api", "metrics"],
+          "query": [
+            {
+              "key": "company_id",
+              "value": "1"
+            },
+            {
+              "key": "sort_by",
+              "value": "extraction_confidence_score:asc"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Combined Filters",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/metrics?company_id=1&period=2024-Q4&metric=oil_production&basin=Permian Basin&confidence_min=0.85&limit=50&offset=0&sort_by=period_end_date:desc",
+          "host": ["{{base_url}}"],
+          "path": ["api", "metrics"],
+          "query": [
+            {
+              "key": "company_id",
+              "value": "1"
+            },
+            {
+              "key": "period",
+              "value": "2024-Q4"
+            },
+            {
+              "key": "metric",
+              "value": "oil_production"
+            },
+            {
+              "key": "basin",
+              "value": "Permian Basin"
+            },
+            {
+              "key": "confidence_min",
+              "value": "0.85"
+            },
+            {
+              "key": "limit",
+              "value": "50"
+            },
+            {
+              "key": "offset",
+              "value": "0"
+            },
+            {
+              "key": "sort_by",
+              "value": "period_end_date:desc"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Invalid - Missing Company ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/metrics",
+          "host": ["{{base_url}}"],
+          "path": ["api", "metrics"]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    }
+  ]
+}
+

@@ -54,5 +54,21 @@ class Company extends Model
               ->orWhere('ticker_symbol', 'ILIKE', '%' . $search . '%');
         });
     }
+    
+    /**
+     * Relationship to MetricValues
+     */
+    public function metricValues()
+    {
+        return $this->hasMany(MetricValue::class, 'company_id', 'company_id');
+    }
+    
+    /**
+     * Relationship to SourceDocuments
+     */
+    public function sourceDocuments()
+    {
+        return $this->hasMany(SourceDocument::class, 'company_id', 'company_id');
+    }
 }
 

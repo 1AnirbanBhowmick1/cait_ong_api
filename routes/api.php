@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\MetricsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,5 +16,6 @@ use App\Http\Controllers\CompanyController;
 */
 
 Route::get('/companies', [CompanyController::class, 'index']);
+Route::get('/metrics', [MetricsController::class, 'index']);
 
 
