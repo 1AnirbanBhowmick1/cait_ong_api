@@ -25,6 +25,7 @@ class CompanyController extends Controller
                 'limit' => 'nullable|integer|min:1|max:100',
                 'offset' => 'nullable|integer|min:0',
             ]);
+            
 
             if ($validator->fails()) {
                 return response()->json([
