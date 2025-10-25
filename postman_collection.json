@@ -1,0 +1,160 @@
+{
+  "info": {
+    "name": "Companies API",
+    "description": "Collection for testing the Companies API endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Get All Active Companies (Default)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/companies",
+          "host": ["{{base_url}}"],
+          "path": ["api", "companies"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get All Companies (Including Inactive)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/companies?active_only=false",
+          "host": ["{{base_url}}"],
+          "path": ["api", "companies"],
+          "query": [
+            {
+              "key": "active_only",
+              "value": "false"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Search Companies by Name",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/companies?search=Energy",
+          "host": ["{{base_url}}"],
+          "path": ["api", "companies"],
+          "query": [
+            {
+              "key": "search",
+              "value": "Energy"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Search Companies by Ticker",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/companies?search=FANG",
+          "host": ["{{base_url}}"],
+          "path": ["api", "companies"],
+          "query": [
+            {
+              "key": "search",
+              "value": "FANG"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Companies with Pagination",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/companies?limit=20&offset=0",
+          "host": ["{{base_url}}"],
+          "path": ["api", "companies"],
+          "query": [
+            {
+              "key": "limit",
+              "value": "20"
+            },
+            {
+              "key": "offset",
+              "value": "0"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Companies - Combined Filters",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/companies?active_only=true&search=Oil&limit=10&offset=0",
+          "host": ["{{base_url}}"],
+          "path": ["api", "companies"],
+          "query": [
+            {
+              "key": "active_only",
+              "value": "true"
+            },
+            {
+              "key": "search",
+              "value": "Oil"
+            },
+            {
+              "key": "limit",
+              "value": "10"
+            },
+            {
+              "key": "offset",
+              "value": "0"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Invalid Request - Negative Limit",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/companies?limit=-5",
+          "host": ["{{base_url}}"],
+          "path": ["api", "companies"],
+          "query": [
+            {
+              "key": "limit",
+              "value": "-5"
+            }
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    }
+  ]
+}
+
