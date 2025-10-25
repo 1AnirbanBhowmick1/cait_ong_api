@@ -1,0 +1,221 @@
+{
+  "info": {
+    "name": "Confidence Review API",
+    "description": "Collection for testing the Confidence Review API endpoint",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Get Low Confidence Metrics (Default Threshold)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/confidence",
+          "host": ["{{base_url}}"],
+          "path": ["api", "confidence"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Metrics Below Custom Threshold",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/confidence?threshold=0.7",
+          "host": ["{{base_url}}"],
+          "path": ["api", "confidence"],
+          "query": [
+            {
+              "key": "threshold",
+              "value": "0.7"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Filter by Company",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/confidence?company_id=1",
+          "host": ["{{base_url}}"],
+          "path": ["api", "confidence"],
+          "query": [
+            {
+              "key": "company_id",
+              "value": "1"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Filter by Period",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/confidence?period_end_date=2024-12-31",
+          "host": ["{{base_url}}"],
+          "path": ["api", "confidence"],
+          "query": [
+            {
+              "key": "period_end_date",
+              "value": "2024-12-31"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Filter by Metric",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/confidence?metric=oil_production,gas_production",
+          "host": ["{{base_url}}"],
+          "path": ["api", "confidence"],
+          "query": [
+            {
+              "key": "metric",
+              "value": "oil_production,gas_production"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Sort by Confidence Descending",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/confidence?sort_by=confidence:desc",
+          "host": ["{{base_url}}"],
+          "path": ["api", "confidence"],
+          "query": [
+            {
+              "key": "sort_by",
+              "value": "confidence:desc"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Sort by Company Name",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/confidence?sort_by=company_name:asc",
+          "host": ["{{base_url}}"],
+          "path": ["api", "confidence"],
+          "query": [
+            {
+              "key": "sort_by",
+              "value": "company_name:asc"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Paginated Results",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/confidence?limit=20&offset=0",
+          "host": ["{{base_url}}"],
+          "path": ["api", "confidence"],
+          "query": [
+            {
+              "key": "limit",
+              "value": "20"
+            },
+            {
+              "key": "offset",
+              "value": "0"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Combined Filters - Critical Review Queue",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/confidence?threshold=0.5&company_id=1&period_end_date=2024-12-31&sort_by=confidence:asc&limit=50",
+          "host": ["{{base_url}}"],
+          "path": ["api", "confidence"],
+          "query": [
+            {
+              "key": "threshold",
+              "value": "0.5"
+            },
+            {
+              "key": "company_id",
+              "value": "1"
+            },
+            {
+              "key": "period_end_date",
+              "value": "2024-12-31"
+            },
+            {
+              "key": "sort_by",
+              "value": "confidence:asc"
+            },
+            {
+              "key": "limit",
+              "value": "50"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Invalid - Threshold Out of Range",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/confidence?threshold=1.5",
+          "host": ["{{base_url}}"],
+          "path": ["api", "confidence"],
+          "query": [
+            {
+              "key": "threshold",
+              "value": "1.5"
+            }
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    }
+  ]
+}
+
