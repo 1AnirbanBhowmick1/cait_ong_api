@@ -1,0 +1,218 @@
+{
+  "info": {
+    "name": "Summary API",
+    "description": "Collection for testing the Summary API endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Get Summary by Company (Default)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/summary?period_end_date=2024-12-31",
+          "host": ["{{base_url}}"],
+          "path": ["api", "summary"],
+          "query": [
+            {
+              "key": "period_end_date",
+              "value": "2024-12-31"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Summary by Quarter",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/summary?period=2024-Q4",
+          "host": ["{{base_url}}"],
+          "path": ["api", "summary"],
+          "query": [
+            {
+              "key": "period",
+              "value": "2024-Q4"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Summary with Specific Metrics",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/summary?period_end_date=2024-12-31&metrics=oil_production,gas_production",
+          "host": ["{{base_url}}"],
+          "path": ["api", "summary"],
+          "query": [
+            {
+              "key": "period_end_date",
+              "value": "2024-12-31"
+            },
+            {
+              "key": "metrics",
+              "value": "oil_production,gas_production"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Summary Grouped by Basin",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/summary?period_end_date=2024-12-31&group_by=basin",
+          "host": ["{{base_url}}"],
+          "path": ["api", "summary"],
+          "query": [
+            {
+              "key": "period_end_date",
+              "value": "2024-12-31"
+            },
+            {
+              "key": "group_by",
+              "value": "basin"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Summary Grouped by Segment",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/summary?period_end_date=2024-12-31&group_by=segment",
+          "host": ["{{base_url}}"],
+          "path": ["api", "summary"],
+          "query": [
+            {
+              "key": "period_end_date",
+              "value": "2024-12-31"
+            },
+            {
+              "key": "group_by",
+              "value": "segment"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Filter by Company IDs",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/summary?period_end_date=2024-12-31&company_ids=1,2,3",
+          "host": ["{{base_url}}"],
+          "path": ["api", "summary"],
+          "query": [
+            {
+              "key": "period_end_date",
+              "value": "2024-12-31"
+            },
+            {
+              "key": "company_ids",
+              "value": "1,2,3"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Filter by Minimum Confidence",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/summary?period_end_date=2024-12-31&confidence_min=0.9",
+          "host": ["{{base_url}}"],
+          "path": ["api", "summary"],
+          "query": [
+            {
+              "key": "period_end_date",
+              "value": "2024-12-31"
+            },
+            {
+              "key": "confidence_min",
+              "value": "0.9"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Combined Filters",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/summary?period=2024-Q4&metrics=oil_production,gas_production&group_by=company&company_ids=1,2&confidence_min=0.85",
+          "host": ["{{base_url}}"],
+          "path": ["api", "summary"],
+          "query": [
+            {
+              "key": "period",
+              "value": "2024-Q4"
+            },
+            {
+              "key": "metrics",
+              "value": "oil_production,gas_production"
+            },
+            {
+              "key": "group_by",
+              "value": "company"
+            },
+            {
+              "key": "company_ids",
+              "value": "1,2"
+            },
+            {
+              "key": "confidence_min",
+              "value": "0.85"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Invalid - Missing Period",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/summary",
+          "host": ["{{base_url}}"],
+          "path": ["api", "summary"]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    }
+  ]
+}
+
