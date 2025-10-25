@@ -1,0 +1,56 @@
+{
+  "info": {
+    "name": "Metric Detail API",
+    "description": "Collection for testing the Metric Detail API endpoint",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Get Metric Detail by ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/metric/1",
+          "host": ["{{base_url}}"],
+          "path": ["api", "metric", "1"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Another Metric Detail",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/metric/5",
+          "host": ["{{base_url}}"],
+          "path": ["api", "metric", "5"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Non-Existent Metric (404)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/metric/99999",
+          "host": ["{{base_url}}"],
+          "path": ["api", "metric", "99999"]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    }
+  ]
+}
+
