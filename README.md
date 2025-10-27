@@ -1,4 +1,12 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# CAITong API v1
+
+<p align="center">
+<img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="300" alt="Laravel Logo">
+</p>
+
+<p align="center">
+<strong>Corporate Analytics Intelligence Tool (CAITong) - Energy Sector Metrics API</strong>
+</p>
 
 <p align="center">
 <a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
@@ -7,55 +15,233 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
-## About Laravel
+## About CAITong API
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+CAITong (Corporate Analytics Intelligence Tool) is a comprehensive Laravel-based API system designed for tracking and analyzing energy sector company metrics. The platform provides structured access to corporate data including company information, financial metrics, operational KPIs, and confidence scoring for data extraction processes.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### Key Features
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **Company Management**: Track energy sector companies with detailed metadata
+- **Metrics Tracking**: Comprehensive metric definitions and value tracking
+- **Data Confidence Scoring**: AI-powered confidence scoring for extracted data
+- **Multi-dimensional Filtering**: Filter by company, period, basin, segment, and more
+- **RESTful API Design**: Clean, consistent API endpoints with proper error handling
+- **Performance Optimization**: Built-in caching, database indexing, and query optimization
+- **Comprehensive Testing**: Full test coverage with factories and feature tests
 
-## Learning Laravel
+## API Endpoints
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+The CAITong API provides the following endpoints for accessing energy sector data:
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### Companies API
+- **GET** `/api/companies` - Retrieve list of tracked companies
+  - Parameters: `active_only`, `search`, `limit`, `offset`
+  - Returns: Company metadata with ticker symbols and company types
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Metrics API
+- **GET** `/api/metrics` - Get available metric definitions
+  - Returns: Metric categories, names, units, and groupings
 
-## Laravel Sponsors
+### Summary API
+- **GET** `/api/summary` - Get aggregated summary data
+  - Returns: High-level metrics and KPIs across companies
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### Metric Detail API
+- **GET** `/api/metric/{id}` - Get detailed metric information
+  - Returns: Specific metric values with extraction details
 
-### Premium Partners
+### Confidence API
+- **GET** `/api/confidence` - Get data confidence scores
+  - Returns: Confidence metrics for data extraction processes
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+## Quick Start
+
+### Prerequisites
+
+- PHP 8.2 or higher
+- PostgreSQL database
+- Composer
+- Node.js & NPM (for frontend assets)
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd caitong_v1
+   ```
+
+2. **Install dependencies**
+   ```bash
+   composer install
+   npm install
+   ```
+
+3. **Environment setup**
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
+
+4. **Database configuration**
+   Update your `.env` file with PostgreSQL credentials:
+   ```env
+   DB_CONNECTION=pgsql
+   DB_HOST=127.0.0.1
+   DB_PORT=5432
+   DB_DATABASE=your_database_name
+   DB_USERNAME=your_username
+   DB_PASSWORD=your_password
+   DB_SCHEMA=cait_dev
+   ```
+
+5. **Run migrations**
+   ```bash
+   php artisan migrate
+   ```
+
+6. **Start the development server**
+   ```bash
+   php artisan serve
+   ```
+
+The API will be available at `http://localhost:8000/api/`
+
+### Testing the API
+
+Test the companies endpoint:
+```bash
+curl http://localhost:8000/api/companies
+```
+
+Search for companies:
+```bash
+curl "http://localhost:8000/api/companies?search=Energy&limit=10"
+```
+
+Run the test suite:
+```bash
+php artisan test
+```
+
+## Project Structure
+
+```
+caitong_v1/
+├── app/
+│   ├── Http/Controllers/          # API Controllers
+│   │   ├── CompanyController.php   # Companies API
+│   │   ├── MetricsController.php   # Metrics API
+│   │   ├── SummaryController.php   # Summary API
+│   │   ├── MetricDetailController.php # Metric Detail API
+│   │   └── ConfidenceController.php # Confidence API
+│   ├── Models/                     # Eloquent Models
+│   │   ├── Company.php             # Company model
+│   │   ├── MetricDefinition.php    # Metric definitions
+│   │   ├── MetricValue.php         # Metric values
+│   │   └── SourceDocument.php      # Source documents
+│   └── Services/                   # Business Logic
+│       └── UnitConverterService.php # Unit conversion utilities
+├── database/
+│   ├── migrations/                 # Database migrations
+│   ├── factories/                  # Model factories for testing
+│   └── seeders/                    # Database seeders
+├── tests/
+│   ├── Feature/                    # Feature tests
+│   └── Unit/                       # Unit tests
+├── routes/
+│   └── api.php                     # API route definitions
+└── Documentation/
+    ├── API_DOCUMENTATION.md        # Complete API documentation
+    ├── COMPANIES_API_README.md     # Companies API guide
+    ├── IMPLEMENTATION_SUMMARY.md   # Implementation details
+    ├── DEPLOYMENT_CHECKLIST.md     # Deployment guide
+    └── QUICK_REFERENCE.md         # Quick reference card
+```
+
+## Data Models
+
+### Company
+- **Purpose**: Track energy sector companies
+- **Key Fields**: `company_id`, `company_name`, `ticker_symbol`, `company_type`, `status`
+- **Types**: upstream, integrated, midstream, downstream
+
+### MetricDefinition
+- **Purpose**: Define available metrics and their properties
+- **Key Fields**: `metric_id`, `metric_category`, `metric_name_display`, `metric_unit`, `metric_group`
+
+### MetricValue
+- **Purpose**: Store actual metric values with extraction metadata
+- **Key Fields**: `company_id`, `metric_id`, `extracted_metric_value`, `extraction_confidence_score`, `period_start_date`, `period_end_date`
+
+## Performance Features
+
+- **Caching**: 5-minute result caching for frequently accessed data
+- **Database Indexing**: Optimized indexes on filter and sort columns
+- **Query Optimization**: Efficient Eloquent queries with proper relationships
+- **Pagination**: Built-in pagination support for large datasets
+
+## Documentation
+
+- **[API Documentation](API_DOCUMENTATION.md)** - Complete API reference
+- **[Implementation Summary](IMPLEMENTATION_SUMMARY.md)** - Technical implementation details
+- **[Deployment Checklist](DEPLOYMENT_CHECKLIST.md)** - Production deployment guide
+- **[Quick Reference](QUICK_REFERENCE.md)** - Quick reference card for developers
+
+## Testing
+
+The project includes comprehensive test coverage:
+
+```bash
+# Run all tests
+php artisan test
+
+# Run specific test suites
+php artisan test --filter CompanyApiTest
+php artisan test --filter MetricsApiTest
+php artisan test --filter SummaryApiTest
+```
+
+## Development Commands
+
+```bash
+# Start development server
+php artisan serve
+
+# Clear caches
+php artisan cache:clear
+php artisan config:clear
+php artisan route:clear
+
+# Run migrations
+php artisan migrate
+
+# Generate application key
+php artisan key:generate
+
+# List all routes
+php artisan route:list
+```
 
 ## Contributing
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This project is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## Support
+
+For support and questions:
+- Check the documentation files in the project root
+- Review the API documentation for endpoint details
+- Check Laravel logs at `storage/logs/laravel.log` for errors
+
+---
+
+**Built with Laravel 12** - A powerful PHP framework for building robust web applications.
