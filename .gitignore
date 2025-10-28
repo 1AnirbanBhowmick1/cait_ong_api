@@ -1,5 +1,6 @@
 *.log
 .DS_Store
+docker.env
 .env
 .env.backup
 .env.production
@@ -22,3 +23,9 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Temporary test files
+test.php
+
+# Docker compose files with sensitive data
+docker-compose.dev.yml
