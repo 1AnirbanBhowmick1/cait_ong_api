@@ -1,0 +1,52 @@
+name: Performance Tests
+
+on:
+  schedule:
+    - cron: '0 2 * * 1' # Weekly on Monday at 2 AM
+  workflow_dispatch:
+
+jobs:
+  performance-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+
+    - name: Install Composer dependencies
+      run: composer install --no-progress --prefer-dist --optimize-autoloader
+
+    - name: Copy environment file
+      run: cp docker.env .env
+
+    - name: Generate application key
+      run: php artisan key:generate
+
+    - name: Run database migrations
+      run: php artisan migrate --force
+
+    - name: Run performance tests
+      run: |
+        # Create a simple performance test
+        php artisan tinker --execute="
+        \$start = microtime(true);
+        for (\$i = 0; \$i < 1000; \$i++) {
+            App\Models\User::count();
+        }
+        \$end = microtime(true);
+        echo 'Performance test completed in: ' . (\$end - \$start) . ' seconds';
+        "
+
+    - name: Memory usage test
+      run: |
+        php -d memory_limit=512M artisan tinker --execute="
+        \$memory_start = memory_get_usage();
+        \$users = App\Models\User::take(1000)->get();
+        \$memory_end = memory_get_usage();
+        echo 'Memory usage: ' . ((\$memory_end - \$memory_start) / 1024 / 1024) . ' MB';
+        "

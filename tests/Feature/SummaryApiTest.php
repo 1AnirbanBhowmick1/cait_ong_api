@@ -2,11 +2,11 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
 use App\Models\Company;
 use App\Models\MetricDefinition;
 use App\Models\MetricValue;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class SummaryApiTest extends TestCase
 {
@@ -19,7 +19,7 @@ class SummaryApiTest extends TestCase
 
         $response->assertStatus(400)
             ->assertJson([
-                'error' => 'Invalid parameters'
+                'error' => 'Invalid parameters',
             ]);
     }
 
@@ -28,7 +28,7 @@ class SummaryApiTest extends TestCase
     {
         $company1 = Company::factory()->create(['company_name' => 'Company A']);
         $company2 = Company::factory()->create(['company_name' => 'Company B']);
-        
+
         $metricDef = MetricDefinition::factory()->create([
             'metric_name_internal' => 'oil_production',
             'metric_name_display' => 'Oil Production',
@@ -76,17 +76,17 @@ class SummaryApiTest extends TestCase
                     'aggregated_normalized_unit',
                     'avg_confidence',
                     'record_count',
-                ]
+                ],
             ]);
 
         $data = $response->json();
-        
+
         // Check Company A aggregation
         $companyA = collect($data)->firstWhere('company_id', $company1->company_id);
         $this->assertEquals(250, $companyA['aggregated_normalized_value']); // 100 + 150
         $this->assertEquals(0.93, $companyA['avg_confidence']); // (0.9 + 0.95) / 2
         $this->assertEquals(2, $companyA['record_count']);
-        
+
         // Check Company B aggregation
         $companyB = collect($data)->firstWhere('company_id', $company2->company_id);
         $this->assertEquals(200, $companyB['aggregated_normalized_value']);
@@ -121,7 +121,7 @@ class SummaryApiTest extends TestCase
         $company1 = Company::factory()->create();
         $company2 = Company::factory()->create();
         $company3 = Company::factory()->create();
-        
+
         $metricDef = MetricDefinition::factory()->create([
             'metric_name_internal' => 'oil_production',
         ]);
@@ -151,7 +151,7 @@ class SummaryApiTest extends TestCase
 
         $response->assertStatus(200);
         $data = $response->json();
-        
+
         $this->assertCount(2, $data);
         $companyIds = collect($data)->pluck('company_id')->toArray();
         $this->assertContains($company1->company_id, $companyIds);
@@ -187,7 +187,7 @@ class SummaryApiTest extends TestCase
 
         $response->assertStatus(200);
         $data = $response->json();
-        
+
         // Only the high-confidence record should be included
         $this->assertEquals(100, $data[0]['aggregated_normalized_value']);
         $this->assertEquals(1, $data[0]['record_count']);
@@ -229,13 +229,13 @@ class SummaryApiTest extends TestCase
 
         $response->assertStatus(200);
         $data = $response->json();
-        
+
         $this->assertCount(2, $data);
-        
+
         $permian = collect($data)->firstWhere('basin_name', 'Permian Basin');
         $this->assertEquals(250, $permian['aggregated_normalized_value']);
         $this->assertNull($permian['company_id']);
-        
+
         $midland = collect($data)->firstWhere('basin_name', 'Midland Basin');
         $this->assertEquals(200, $midland['aggregated_normalized_value']);
     }
@@ -276,13 +276,13 @@ class SummaryApiTest extends TestCase
 
         $response->assertStatus(200);
         $data = $response->json();
-        
+
         $this->assertCount(2, $data);
-        
+
         $upstream = collect($data)->firstWhere('segment_name', 'Upstream');
         $this->assertEquals(250, $upstream['aggregated_normalized_value']);
         $this->assertNull($upstream['company_id']);
-        
+
         $midstream = collect($data)->firstWhere('segment_name', 'Midstream');
         $this->assertEquals(200, $midstream['aggregated_normalized_value']);
     }
@@ -316,9 +316,9 @@ class SummaryApiTest extends TestCase
 
         $response->assertStatus(200);
         $data = $response->json();
-        
+
         $this->assertCount(2, $data);
-        
+
         $metrics = collect($data)->pluck('metric_name_internal')->toArray();
         $this->assertContains('oil_production', $metrics);
         $this->assertContains('gas_production', $metrics);
@@ -354,7 +354,7 @@ class SummaryApiTest extends TestCase
 
         $response->assertStatus(200);
         $data = $response->json();
-        
+
         // 1000 bbl = 1 mbbl, plus 5 mbbl = 6 mbbl total
         $this->assertEquals(6, $data[0]['aggregated_normalized_value']);
         $this->assertEquals('mbbl', $data[0]['aggregated_normalized_unit']);
@@ -373,7 +373,7 @@ class SummaryApiTest extends TestCase
     {
         $company1 = Company::factory()->create(['company_name' => 'Zebra Company']);
         $company2 = Company::factory()->create(['company_name' => 'Alpha Company']);
-        
+
         $metricDef1 = MetricDefinition::factory()->create([
             'metric_name_internal' => 'oil_production',
         ]);
@@ -399,10 +399,9 @@ class SummaryApiTest extends TestCase
 
         $response->assertStatus(200);
         $data = $response->json();
-        
+
         // Should be sorted by company name first
         $this->assertEquals('Alpha Company', $data[0]['company_name']);
         $this->assertEquals('Zebra Company', $data[1]['company_name']);
     }
 }
-

@@ -8,16 +8,17 @@ use Illuminate\Database\Eloquent\Model;
 class MetricDefinition extends Model
 {
     use HasFactory;
-    
+
     protected $table = 'metric_definition';
-    
+
     protected $primaryKey = 'metric_id';
-    
+
     public $timestamps = true;
-    
+
     const CREATED_AT = 'created_at';
+
     const UPDATED_AT = null;
-    
+
     protected $fillable = [
         'metric_category',
         'metric_name_display',
@@ -26,12 +27,12 @@ class MetricDefinition extends Model
         'metric_group',
         'is_active',
     ];
-    
+
     protected $casts = [
         'is_active' => 'boolean',
         'created_at' => 'datetime',
     ];
-    
+
     /**
      * Relationship to MetricValues
      */
@@ -40,4 +41,3 @@ class MetricDefinition extends Model
         return $this->hasMany(MetricValue::class, 'metric_id', 'metric_id');
     }
 }
-

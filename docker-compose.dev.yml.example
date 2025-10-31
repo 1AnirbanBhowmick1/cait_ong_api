@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: caitong_app_dev
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+      - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    expose:
+      - "9000"
+    depends_on:
+      - redis
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - DB_CONNECTION=pgsql
+      - DB_HOST=your_database_host_here
+      - DB_PORT=5432
+      - DB_DATABASE=your_database_name_here
+      - DB_USERNAME=your_database_username_here
+      - DB_PASSWORD=your_database_password_here
+      - DB_SCHEMA=your_database_schema_here
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - CACHE_DRIVER=redis
+      - SESSION_DRIVER=redis
+      - QUEUE_CONNECTION=redis
+    networks:
+      - caitong_dev_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: caitong_redis_dev
+    restart: unless-stopped
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_dev_data:/data
+    networks:
+      - caitong_dev_network
+
+  nginx:
+    image: nginx:alpine
+    container_name: caitong_nginx_dev
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - ./:/var/www/html
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+    networks:
+      - caitong_dev_network
+
+  mailpit:
+    image: axllent/mailpit
+    container_name: caitong_mailpit
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - caitong_dev_network
+
+volumes:
+  redis_dev_data:
+
+networks:
+  caitong_dev_network:
+    driver: bridge
