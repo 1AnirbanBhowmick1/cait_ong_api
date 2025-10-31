@@ -2,12 +2,12 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
 use App\Models\Company;
 use App\Models\MetricDefinition;
 use App\Models\MetricValue;
 use App\Models\SourceDocument;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class MetricDetailApiTest extends TestCase
 {
@@ -72,12 +72,12 @@ class MetricDetailApiTest extends TestCase
                 'source_type',
                 'created_at',
                 'derived_checks' => [
-                    '*' => ['name', 'status', 'reason']
-                ]
+                    '*' => ['name', 'status', 'reason'],
+                ],
             ]);
 
         $data = $response->json();
-        
+
         $this->assertEquals($metricValue->metric_value_id, $data['metric_value_id']);
         $this->assertEquals('Test Company', $data['company_name']);
         $this->assertEquals('oil_production', $data['metric_name_internal']);
@@ -98,7 +98,7 @@ class MetricDetailApiTest extends TestCase
 
         $response->assertStatus(404)
             ->assertJson([
-                'error' => 'Metric value not found'
+                'error' => 'Metric value not found',
             ]);
     }
 
@@ -123,7 +123,7 @@ class MetricDetailApiTest extends TestCase
         $response = $this->getJson("/api/metric/{$metricValue->metric_value_id}");
 
         $response->assertStatus(200);
-        
+
         $data = $response->json();
         $this->assertEquals('https://www.sec.gov/filing/123', $data['source_url']);
         $this->assertEquals('SEC_FILING', $data['source_type']);
@@ -145,7 +145,7 @@ class MetricDetailApiTest extends TestCase
         $response = $this->getJson("/api/metric/{$metricValue->metric_value_id}");
 
         $response->assertStatus(200);
-        
+
         $data = $response->json();
         $this->assertNull($data['source_document_id']);
         $this->assertNull($data['source_url']);
@@ -172,7 +172,7 @@ class MetricDetailApiTest extends TestCase
         $response = $this->getJson("/api/metric/{$metricValue->metric_value_id}");
 
         $response->assertStatus(200);
-        
+
         $data = $response->json();
         $this->assertEquals(5000, $data['original_value']);
         $this->assertEquals('mcf', $data['original_unit']);
@@ -195,11 +195,11 @@ class MetricDetailApiTest extends TestCase
         $response = $this->getJson("/api/metric/{$metricValue->metric_value_id}");
 
         $response->assertStatus(200);
-        
+
         $data = $response->json();
         $this->assertIsArray($data['derived_checks']);
         $this->assertNotEmpty($data['derived_checks']);
-        
+
         // Check that each derived check has required fields
         foreach ($data['derived_checks'] as $check) {
             $this->assertArrayHasKey('name', $check);
@@ -224,12 +224,12 @@ class MetricDetailApiTest extends TestCase
         $response = $this->getJson("/api/metric/{$metricValue->metric_value_id}");
 
         $response->assertStatus(200);
-        
+
         $data = $response->json();
-        
+
         $confidenceCheck = collect($data['derived_checks'])
             ->firstWhere('name', 'Low confidence score');
-        
+
         $this->assertNotNull($confidenceCheck);
         $this->assertEquals('flag', $confidenceCheck['status']);
     }
@@ -251,12 +251,12 @@ class MetricDetailApiTest extends TestCase
         $response = $this->getJson("/api/metric/{$metricValue->metric_value_id}");
 
         $response->assertStatus(200);
-        
+
         $data = $response->json();
-        
+
         $periodCheck = collect($data['derived_checks'])
             ->firstWhere('name', 'Period duration check');
-        
+
         $this->assertNotNull($periodCheck);
         $this->assertEquals('flag', $periodCheck['status']);
     }
@@ -278,12 +278,12 @@ class MetricDetailApiTest extends TestCase
         $response = $this->getJson("/api/metric/{$metricValue->metric_value_id}");
 
         $response->assertStatus(200);
-        
+
         $data = $response->json();
-        
+
         $valueCheck = collect($data['derived_checks'])
             ->firstWhere('name', 'Value sanity check');
-        
+
         $this->assertNotNull($valueCheck);
         $this->assertEquals('flag', $valueCheck['status']);
         $this->assertStringContainsString('Negative', $valueCheck['reason']);
@@ -293,7 +293,7 @@ class MetricDetailApiTest extends TestCase
     public function it_checks_boe_consistency_when_related_metrics_exist()
     {
         $company = Company::factory()->create();
-        
+
         $oilMetric = MetricDefinition::factory()->create([
             'metric_name_internal' => 'oil_production',
         ]);
@@ -332,15 +332,14 @@ class MetricDetailApiTest extends TestCase
         $response = $this->getJson("/api/metric/{$boeValue->metric_value_id}");
 
         $response->assertStatus(200);
-        
+
         $data = $response->json();
-        
+
         // Should have BOE consistency check
         $boeCheck = collect($data['derived_checks'])
             ->firstWhere('name', 'BOE consistency check');
-        
+
         $this->assertNotNull($boeCheck);
         $this->assertContains($boeCheck['status'], ['ok', 'flag']);
     }
 }
-

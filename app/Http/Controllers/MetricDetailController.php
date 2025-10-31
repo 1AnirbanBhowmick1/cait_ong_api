@@ -4,18 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\MetricValue;
 use App\Services\UnitConverterService;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class MetricDetailController extends Controller
 {
     protected $unitConverter;
-    
+
     public function __construct(UnitConverterService $unitConverter)
     {
         $this->unitConverter = $unitConverter;
     }
-    
+
     /**
      * Display full metadata for a single metric row
      *
@@ -35,7 +34,7 @@ class MetricDetailController extends Controller
                     'companies.company_name',
                     'source_document.source_url',
                     DB::raw('source_document.filing_date::date as filing_date'),
-                    'source_document.source_type'
+                    'source_document.source_type',
                 ])
                 ->join('metric_definition', 'metric_value.metric_id', '=', 'metric_definition.metric_id')
                 ->join('companies', 'metric_value.company_id', '=', 'companies.company_id')
@@ -43,9 +42,9 @@ class MetricDetailController extends Controller
                 ->where('metric_value.metric_value_id', $metricValueId)
                 ->first();
 
-            if (!$metricValue) {
+            if (! $metricValue) {
                 return response()->json([
-                    'error' => 'Metric value not found'
+                    'error' => 'Metric value not found',
                 ], 404);
             }
 
@@ -90,26 +89,26 @@ class MetricDetailController extends Controller
             ];
 
             return response()->json($response, 200);
-            
+
         } catch (\Exception $e) {
             // Log the error for debugging
-            \Log::error('Metric Detail API Error: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString()
+            \Log::error('Metric Detail API Error: '.$e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
             ]);
-            
+
             return response()->json([
-                'error' => 'Internal server error'
+                'error' => 'Internal server error',
             ], 500);
         }
     }
-    
+
     /**
      * Run derived checks for data quality and consistency
      */
     private function runDerivedChecks($metricValue): array
     {
         $checks = [];
-        
+
         // Check 1: Confidence score threshold
         if ($metricValue->extraction_confidence_score < 0.8) {
             $checks[] = [
@@ -118,16 +117,16 @@ class MetricDetailController extends Controller
                 'reason' => sprintf(
                     'Confidence score %.2f is below recommended threshold of 0.80',
                     $metricValue->extraction_confidence_score
-                )
+                ),
             ];
         } else {
             $checks[] = [
                 'name' => 'Confidence score check',
                 'status' => 'ok',
-                'reason' => sprintf('Confidence score %.2f meets quality threshold', $metricValue->extraction_confidence_score)
+                'reason' => sprintf('Confidence score %.2f meets quality threshold', $metricValue->extraction_confidence_score),
             ];
         }
-        
+
         // Check 2: BOE consistency (if this is a production metric)
         if (in_array($metricValue->metric_name_internal, ['oil_production', 'gas_production', 'ngl_production', 'boe_production'])) {
             $boeCheck = $this->checkBOEConsistency($metricValue);
@@ -135,52 +134,52 @@ class MetricDetailController extends Controller
                 $checks[] = $boeCheck;
             }
         }
-        
+
         // Check 3: Period duration check
         if ($metricValue->period_start_date && $metricValue->period_end_date) {
             $daysDiff = $metricValue->period_start_date->diffInDays($metricValue->period_end_date);
-            
+
             if ($daysDiff < 28 || $daysDiff > 366) {
                 $checks[] = [
                     'name' => 'Period duration check',
                     'status' => 'flag',
-                    'reason' => sprintf('Period duration of %d days is unusual (expected 28-366)', $daysDiff)
+                    'reason' => sprintf('Period duration of %d days is unusual (expected 28-366)', $daysDiff),
                 ];
             } else {
                 $checks[] = [
                     'name' => 'Period duration check',
                     'status' => 'ok',
-                    'reason' => sprintf('Period duration of %d days is within normal range', $daysDiff)
+                    'reason' => sprintf('Period duration of %d days is within normal range', $daysDiff),
                 ];
             }
         }
-        
+
         // Check 4: Value reasonability (basic sanity check)
         if ($metricValue->extracted_metric_value !== null) {
             if ($metricValue->extracted_metric_value < 0) {
                 $checks[] = [
                     'name' => 'Value sanity check',
                     'status' => 'flag',
-                    'reason' => 'Negative value detected for production metric'
+                    'reason' => 'Negative value detected for production metric',
                 ];
             } elseif ($metricValue->extracted_metric_value == 0) {
                 $checks[] = [
                     'name' => 'Value sanity check',
                     'status' => 'flag',
-                    'reason' => 'Zero value may indicate missing or null data'
+                    'reason' => 'Zero value may indicate missing or null data',
                 ];
             } else {
                 $checks[] = [
                     'name' => 'Value sanity check',
                     'status' => 'ok',
-                    'reason' => 'Value is within expected range'
+                    'reason' => 'Value is within expected range',
                 ];
             }
         }
-        
+
         return $checks;
     }
-    
+
     /**
      * Check BOE consistency between oil, gas, NGL and total BOE
      */
@@ -191,18 +190,18 @@ class MetricDetailController extends Controller
             ->select([
                 'metric_definition.metric_name_internal',
                 'metric_value.extracted_metric_value',
-                'metric_value.extracted_metric_unit'
+                'metric_value.extracted_metric_unit',
             ])
             ->join('metric_definition', 'metric_value.metric_id', '=', 'metric_definition.metric_id')
             ->where('metric_value.company_id', $metricValue->company_id)
             ->where('metric_value.period_end_date', $metricValue->period_end_date)
             ->whereIn('metric_definition.metric_name_internal', ['oil_production', 'gas_production', 'ngl_production', 'boe_production'])
             ->get();
-        
+
         if ($relatedMetrics->count() < 2) {
             return null; // Not enough data to cross-check
         }
-        
+
         // Convert all to BOE equivalents
         $values = [];
         foreach ($relatedMetrics as $metric) {
@@ -213,7 +212,7 @@ class MetricDetailController extends Controller
             );
             $values[$metric->metric_name_internal] = $conversion['value'] ?? 0;
         }
-        
+
         // Calculate expected BOE (Oil + NGL + Gas/6)
         $expectedBOE = 0;
         if (isset($values['oil_production'])) {
@@ -226,12 +225,12 @@ class MetricDetailController extends Controller
             // Convert gas to BOE (6 MCF = 1 BOE typically)
             $expectedBOE += $values['gas_production'] / 6;
         }
-        
+
         // Compare with reported BOE
         if (isset($values['boe_production']) && $expectedBOE > 0) {
             $reportedBOE = $values['boe_production'];
             $percentDiff = abs(($reportedBOE - $expectedBOE) / $expectedBOE) * 100;
-            
+
             if ($percentDiff > 10) {
                 return [
                     'name' => 'BOE consistency check',
@@ -241,18 +240,17 @@ class MetricDetailController extends Controller
                         $expectedBOE,
                         $reportedBOE,
                         $percentDiff
-                    )
+                    ),
                 ];
             } else {
                 return [
                     'name' => 'BOE consistency check',
                     'status' => 'ok',
-                    'reason' => sprintf('BOE calculation matches within %.1f%% tolerance', $percentDiff)
+                    'reason' => sprintf('BOE calculation matches within %.1f%% tolerance', $percentDiff),
                 ];
             }
         }
-        
+
         return null;
     }
 }
-

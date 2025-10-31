@@ -39,23 +39,25 @@ command_exists() {
 check_prerequisites() {
     print_status "Checking prerequisites..."
     
-    if ! command_exists php; then
-        print_error "PHP is not installed"
+    if ! command_exists docker; then
+        print_error "Docker is not installed"
         exit 1
     fi
     
-    if ! command_exists composer; then
-        print_error "Composer is not installed"
+    if ! command_exists docker-compose; then
+        print_error "Docker Compose is not installed"
         exit 1
     fi
     
-    if ! command_exists node; then
-        print_error "Node.js is not installed"
+    # Check if Docker is running
+    if ! docker info > /dev/null 2>&1; then
+        print_error "Docker is not running. Please start Docker Desktop first."
         exit 1
     fi
     
-    if ! command_exists npm; then
-        print_error "npm is not installed"
+    # Check if docker-compose.dev.yml exists
+    if [ ! -f "docker-compose.dev.yml" ]; then
+        print_error "docker-compose.dev.yml not found. Please run this script from the project root."
         exit 1
     fi
     
@@ -64,16 +66,23 @@ check_prerequisites() {
 
 # Test PHP setup
 test_php() {
-    print_status "Testing PHP setup..."
+    print_status "Testing PHP setup in Docker container..."
     
-    php_version=$(php --version | head -n1)
+    # Check if Docker is running
+    if ! docker-compose -f docker-compose.dev.yml ps app | grep -q "Up"; then
+        print_status "Starting Docker container for testing..."
+        docker-compose -f docker-compose.dev.yml up -d app
+        sleep 5
+    fi
+    
+    php_version=$(docker-compose -f docker-compose.dev.yml exec app php --version | head -n1)
     print_status "PHP Version: $php_version"
     
     # Check required extensions
-    required_extensions=("mbstring" "dom" "fileinfo" "pdo_pgsql" "zip" "gd" "bcmath")
+    required_extensions=("mbstring" "dom" "fileinfo" "pdo_pgsql" "zip" "gd" "bcmath" "redis")
     
     for ext in "${required_extensions[@]}"; do
-        if php -m | grep -q "$ext"; then
+        if docker-compose -f docker-compose.dev.yml exec app php -m | grep -q "$ext"; then
             print_status "✅ $ext extension found"
         else
             print_error "❌ $ext extension missing"
@@ -86,37 +95,42 @@ test_php() {
 
 # Test Composer
 test_composer() {
-    print_status "Testing Composer..."
+    print_status "Testing Composer in Docker container..."
     
-    composer_version=$(composer --version | head -n1)
+    composer_version=$(docker-compose -f docker-compose.dev.yml exec app composer --version | head -n1)
     print_status "Composer Version: $composer_version"
     
     # Install dependencies
     print_status "Installing Composer dependencies..."
-    composer install --no-progress --prefer-dist --optimize-autoloader
+    docker-compose -f docker-compose.dev.yml exec app composer install --no-progress --prefer-dist --optimize-autoloader
     
     print_status "Composer test passed!"
 }
 
 # Test Node.js
 test_node() {
-    print_status "Testing Node.js..."
+    print_status "Testing Node.js in Docker container..."
     
-    node_version=$(node --version)
-    npm_version=$(npm --version)
+    node_version=$(docker-compose -f docker-compose.dev.yml exec app node --version)
+    npm_version=$(docker-compose -f docker-compose.dev.yml exec app npm --version)
     print_status "Node Version: $node_version"
     print_status "npm Version: $npm_version"
     
-    # Install dependencies
+    # Install dependencies (use npm ci if lock file exists, otherwise npm install)
     print_status "Installing npm dependencies..."
-    npm ci
+    if [ -f "package-lock.json" ]; then
+        docker-compose -f docker-compose.dev.yml exec app npm ci
+    else
+        print_warning "package-lock.json not found, using npm install instead"
+        docker-compose -f docker-compose.dev.yml exec app npm install
+    fi
     
     print_status "Node.js test passed!"
 }
 
 # Test Laravel
 test_laravel() {
-    print_status "Testing Laravel..."
+    print_status "Testing Laravel in Docker container..."
     
     # Copy environment file
     if [ -f "docker.env" ]; then
@@ -129,23 +143,23 @@ test_laravel() {
     
     # Generate application key
     print_status "Generating application key..."
-    php artisan key:generate
+    docker-compose -f docker-compose.dev.yml exec app php artisan key:generate
     
     # Test artisan commands
     print_status "Testing Artisan commands..."
-    php artisan --version
-    php artisan route:list > /dev/null
-    php artisan config:cache > /dev/null
+    docker-compose -f docker-compose.dev.yml exec app php artisan --version
+    docker-compose -f docker-compose.dev.yml exec app php artisan route:list > /dev/null
+    docker-compose -f docker-compose.dev.yml exec app php artisan config:cache > /dev/null
     
     print_status "Laravel test passed!"
 }
 
 # Test Code Style
 test_code_style() {
-    print_status "Testing code style with Laravel Pint..."
+    print_status "Testing code style with Laravel Pint in Docker container..."
     
-    if [ -f "./vendor/bin/pint" ]; then
-        ./vendor/bin/pint --test
+    if docker-compose -f docker-compose.dev.yml exec app test -f "./vendor/bin/pint"; then
+        docker-compose -f docker-compose.dev.yml exec app ./vendor/bin/pint --test
         print_status "Code style test passed!"
     else
         print_warning "Laravel Pint not found, skipping code style test"
@@ -154,12 +168,12 @@ test_code_style() {
 
 # Test PHPUnit (if database is available)
 test_phpunit() {
-    print_status "Testing PHPUnit..."
+    print_status "Testing PHPUnit in Docker container..."
     
     # Check if we can connect to database
-    if php artisan migrate:status > /dev/null 2>&1; then
+    if docker-compose -f docker-compose.dev.yml exec app php artisan migrate:status > /dev/null 2>&1; then
         print_status "Database connection available, running tests..."
-        php artisan test --stop-on-failure
+        docker-compose -f docker-compose.dev.yml exec app php artisan test --stop-on-failure
         print_status "PHPUnit test passed!"
     else
         print_warning "Database not available, skipping PHPUnit tests"

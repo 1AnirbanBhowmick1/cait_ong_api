@@ -13,7 +13,7 @@ class MetricDefinitionFactory extends Factory
     {
         $categories = ['OPERATIONAL', 'ACTIVITY', 'FINANCIAL'];
         $groups = ['Production', 'Wells', 'Drilling', 'Economics'];
-        
+
         $metricNames = [
             ['Oil Production', 'oil_production', 'mbbl'],
             ['Gas Production', 'gas_production', 'mmcf'],
@@ -21,9 +21,9 @@ class MetricDefinitionFactory extends Factory
             ['Gross Wells Drilled', 'gross_wells_drilled', '#'],
             ['Total Lateral Length Drilled', 'total_lateral_length_drilled', 'ft'],
         ];
-        
+
         $metric = fake()->randomElement($metricNames);
-        
+
         return [
             'metric_category' => fake()->randomElement($categories),
             'metric_name_display' => $metric[0],
@@ -35,4 +35,3 @@ class MetricDefinitionFactory extends Factory
         ];
     }
 }
-

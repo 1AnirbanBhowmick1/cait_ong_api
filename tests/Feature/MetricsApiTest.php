@@ -2,12 +2,12 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
 use App\Models\Company;
 use App\Models\MetricDefinition;
 use App\Models\MetricValue;
 use App\Models\SourceDocument;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class MetricsApiTest extends TestCase
 {
@@ -20,7 +20,7 @@ class MetricsApiTest extends TestCase
 
         $response->assertStatus(400)
             ->assertJson([
-                'error' => 'Invalid parameters'
+                'error' => 'Invalid parameters',
             ]);
     }
 
@@ -69,9 +69,9 @@ class MetricsApiTest extends TestCase
                         'source_document_id',
                         'source_url',
                         'source_location',
-                        'created_at'
-                    ]
-                ]
+                        'created_at',
+                    ],
+                ],
             ]);
 
         $this->assertEquals(1, $response->json('meta.total'));
@@ -303,4 +303,3 @@ class MetricsApiTest extends TestCase
         $response->assertStatus(400);
     }
 }
-

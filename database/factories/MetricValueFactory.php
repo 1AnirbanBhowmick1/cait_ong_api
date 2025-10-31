@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Models\MetricValue;
 use App\Models\Company;
 use App\Models\MetricDefinition;
+use App\Models\MetricValue;
 use App\Models\SourceDocument;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -18,7 +18,7 @@ class MetricValueFactory extends Factory
         $segments = ['Upstream', 'Midstream', 'Downstream', null];
         $grossOrNet = ['gross', 'net', null];
         $methods = ['html_table_reader', 'xbrl_parser', 'pdf_extractor', 'EGDAR', 'LLM'];
-        
+
         return [
             'company_id' => Company::factory(),
             'metric_id' => MetricDefinition::factory(),
@@ -39,4 +39,3 @@ class MetricValueFactory extends Factory
         ];
     }
 }
-
