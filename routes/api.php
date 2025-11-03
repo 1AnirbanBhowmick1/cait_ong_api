@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/companies', [CompanyController::class, 'index']);
+Route::get('/companies/lookup/{ticker}', [CompanyController::class, 'lookupByTicker']);
 Route::get('/metrics', [MetricsController::class, 'index']);
 Route::get('/summary', [SummaryController::class, 'index']);
 Route::get('/metric/{id}', [MetricDetailController::class, 'show']);

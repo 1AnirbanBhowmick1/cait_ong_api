@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Company;
+use App\Services\SecCompanyLookupService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -68,7 +69,7 @@ class CompanyController extends Controller
                 ->offset($offset)
                 ->get();
 
-            return [
+            $result = [
                 'meta' => [
                     'limit' => $limit,
                     'offset' => $offset,
@@ -96,6 +97,63 @@ class CompanyController extends Controller
             return response()->json([
                 'error' => 'Internal server error',
             ], 500);
+        }
+    }
+
+    /**
+     * Get company details from SEC by ticker symbol
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  string  $ticker
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function lookupByTicker(Request $request, string $ticker)
+    {
+        try {
+            // Validate ticker parameter
+            $validator = Validator::make(['ticker' => $ticker], [
+                'ticker' => 'required|string|max:10|regex:/^[A-Z0-9]+$/i',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'error' => 'Invalid ticker symbol',
+                    'messages' => $validator->errors(),
+                ], 400);
+            }
+
+            // Initialize service and lookup company
+            $lookupService = new SecCompanyLookupService();
+            $companyDetails = $lookupService->getCompanyDetailsByTicker($ticker);
+
+            return response()->json([
+                'success' => true,
+                'data' => $companyDetails,
+            ], 200);
+        } catch (\Exception $e) {
+            // Log the error for debugging
+            \Log::error('Ticker Lookup API Error: '.$e->getMessage(), [
+                'ticker' => $ticker,
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            // Determine appropriate status code based on error
+            $statusCode = 500;
+            $errorMessage = 'Internal server error';
+
+            if (strpos($e->getMessage(), 'not found') !== false) {
+                $statusCode = 404;
+                $errorMessage = $e->getMessage();
+            } elseif (strpos($e->getMessage(), 'Failed to fetch') !== false) {
+                $statusCode = 503;
+                $errorMessage = 'SEC API temporarily unavailable';
+            }
+
+            return response()->json([
+                'success' => false,
+                'error' => $errorMessage,
+                'ticker' => $ticker,
+            ], $statusCode);
         }
     }
 }
