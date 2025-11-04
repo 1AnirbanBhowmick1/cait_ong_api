@@ -9,7 +9,7 @@ class Company extends Model
 {
     use HasFactory;
 
-    protected $table = 'companies';
+    protected $table = 'companies_v1';
 
     protected $primaryKey = 'company_id';
 
@@ -23,22 +23,27 @@ class Company extends Model
         'company_name',
         'ticker_symbol',
         'sec_cik_number',
-        'company_type',
-        'status',
+        'sic_code',
+        'sic_description',
+        'entity_type',
+        'extraction_flag',
+        'admin_approval_flag',
     ];
 
     protected $casts = [
-        'status' => 'boolean',
+        'extraction_flag' => 'boolean',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
 
     /**
-     * Scope to filter only active companies
+     * Scope to filter companies that have been extracted (have additional details)
+     * Checks if sic_code is populated instead of extraction_flag
      */
-    public function scopeActive($query)
+    public function scopeExtracted($query)
     {
-        return $query->where('status', true);
+        return $query->whereNotNull('sic_code')
+            ->where('sic_code', '!=', '');
     }
 
     /**
@@ -54,6 +59,39 @@ class Company extends Model
             $q->where('company_name', 'ILIKE', '%'.$search.'%')
                 ->orWhere('ticker_symbol', 'ILIKE', '%'.$search.'%');
         });
+    }
+
+    /**
+     * Check if company is oil & gas based on SIC code
+     * Uses the same range validation as SecCompanyLookupService
+     */
+    public function isOilGasCompany(): bool
+    {
+        if (!$this->sic_code) {
+            return false;
+        }
+
+        $sicCode = (int) $this->sic_code;
+
+        // Oil & Gas SIC Code Ranges (must match SecCompanyLookupService)
+        $oilGasSicRanges = [
+            [1300, 1389],  // Crude Petroleum and Natural Gas
+            [2911, 2911],  // Petroleum Refining
+            [2990, 2999],  // Petroleum and Coal Products
+            [4612, 4613],  // Petroleum Pipelines
+            [4922, 4925],  // Natural Gas Transmission and Distribution
+            [5172, 5172],  // Petroleum Bulk Stations and Terminals
+        ];
+
+        // Check if SIC code falls within any of the defined ranges
+        foreach ($oilGasSicRanges as $range) {
+            [$start, $end] = $range;
+            if ($sicCode >= $start && $sicCode <= $end) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
