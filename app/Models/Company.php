@@ -40,10 +40,13 @@ class Company extends Model
      * Scope to filter companies that have been extracted (have additional details)
      * Checks if sic_code is populated instead of extraction_flag
      */
+    /**
+     * Scope to filter companies that have been extracted (have additional details)
+     * Checks if sic_code is populated (not null)
+     */
     public function scopeExtracted($query)
     {
-        return $query->whereNotNull('sic_code')
-            ->where('sic_code', '!=', '');
+        return $query->whereNotNull('sic_code');
     }
 
     /**

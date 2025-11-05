@@ -78,7 +78,7 @@ class CompanyController extends Controller
                         'ticker_symbol' => $company->ticker_symbol,
                         'sec_cik_number' => $company->sec_cik_number,
                         'sic_description' => $company->sic_description,
-                        'has_details' => (bool) $company->extraction_flag, // Indicates if details have been extracted
+                        'has_details' => !empty($company->sic_code), // Indicates if details have been extracted (sic_code populated)
                     ];
                 }),
             ];
@@ -226,12 +226,16 @@ class CompanyController extends Controller
             }
 
             // Update company with extracted details (keep extraction_flag as false by default)
+            // Only update if it's an oil & gas company
             $company->update([
                 'sic_code' => $secDetails['sic_code'] ?? null,
                 'sic_description' => $secDetails['sic_description'] ?? null,
                 'entity_type' => $secDetails['entity_type'] ?? null,
                 // extraction_flag remains false by default
             ]);
+            
+            // Return the updated company data
+            $company->refresh();
 
             return response()->json([
                 'success' => true,
@@ -349,8 +353,9 @@ class CompanyController extends Controller
     }
 
     /**
-     * Request approval for a company
-     * Sets admin_approval_flag to "pending" when user clicks request button
+     * Request approval for a company by ID
+     * Extracts details if company is Oil & Gas, then sets admin_approval_flag to "PENDING"
+     * If company is not Oil & Gas, returns error message
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  int  $id  Company ID
@@ -359,31 +364,88 @@ class CompanyController extends Controller
     public function requestApproval(Request $request, int $id)
     {
         try {
-            // Find company in database
+            // Find company in database by ID
             $company = Company::find($id);
 
             if (!$company) {
                 return response()->json([
                     'success' => false,
                     'error' => 'Company not found',
+                    'message' => 'Company not found. Please make sure the company ID is correct.',
                 ], 404);
             }
 
             // Check if company details have been extracted (has sic_code populated)
             if (empty($company->sic_code)) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'Company details not extracted yet. Please extract details first.',
-                ], 400);
-            }
+                // Details not extracted yet - fetch from SEC and check if Oil & Gas
+                $lookupService = new SecCompanyLookupService();
+                
+                // Use CIK from database (we already have it, no need to look it up)
+                $cik = $company->sec_cik_number;
+                
+                if (!$cik) {
+                    return response()->json([
+                        'success' => false,
+                        'error' => 'CIK number not found for this company. Cannot fetch details.',
+                    ], 400);
+                }
 
-            // Check if company is actually an oil & gas company
-            if (!$company->isOilGasCompany()) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'This company is not an oil & gas company',
-                    'is_oil_gas_company' => false,
-                ], 400);
+                // Fetch metadata directly using CIK (faster - no ticker lookup needed)
+                $metadata = $lookupService->getCompanyMetadataFromCik($cik);
+                
+                if (!$metadata) {
+                    return response()->json([
+                        'success' => false,
+                        'error' => 'Failed to fetch company details from SEC API',
+                    ], 500);
+                }
+
+                // Check if it's an oil & gas company
+                $isOilGas = $lookupService->validateOilGasIndustry($metadata);
+                
+                // Format details similar to getCompanyDetailsByTicker response
+                $secDetails = [
+                    'company_name' => $metadata['name'] ?? $company->company_name,
+                    'ticker_symbol' => $company->ticker_symbol,
+                    'sec_cik_number' => $cik,
+                    'sic_code' => $metadata['sic'] ?? null,
+                    'sic_description' => $lookupService->getSicDescription($metadata['sic'] ?? null),
+                    'entity_type' => $metadata['entityType'] ?? null,
+                    'is_oil_gas_company' => $isOilGas,
+                ];
+
+                if (!$isOilGas) {
+                    // Not an Oil & Gas company - cannot proceed
+                    return response()->json([
+                        'success' => false,
+                        'is_oil_gas_company' => false,
+                        'message' => 'This company is not an Oil & Gas company. Extraction can only be done for Oil & Gas companies.',
+                        'error' => 'This company is not an Oil & Gas company',
+                        'company_name' => $company->company_name,
+                        'ticker_symbol' => $company->ticker_symbol,
+                        'sic_code' => $secDetails['sic_code'] ?? null,
+                        'sic_description' => $secDetails['sic_description'] ?? null,
+                    ], 400);
+                }
+
+                // Update company with extracted details (only if it's an oil & gas company)
+                $company->update([
+                    'sic_code' => $secDetails['sic_code'] ?? null,
+                    'sic_description' => $secDetails['sic_description'] ?? null,
+                    'entity_type' => $secDetails['entity_type'] ?? null,
+                ]);
+                
+                $company->refresh();
+            } else {
+                // Details already extracted - check if it's Oil & Gas
+                if (!$company->isOilGasCompany()) {
+                    return response()->json([
+                        'success' => false,
+                        'error' => 'This company is not an Oil & Gas company',
+                        'is_oil_gas_company' => false,
+                        'message' => 'This company is not an Oil & Gas company. Approval requests can only be made for Oil & Gas companies.',
+                    ], 400);
+                }
             }
 
             // Update admin_approval_flag to "PENDING" (must be uppercase per database constraint)
@@ -394,23 +456,29 @@ class CompanyController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Approval request submitted successfully',
+                'is_oil_gas_company' => true,
                 'data' => [
                     'company_id' => $company->company_id,
                     'company_name' => $company->company_name,
                     'ticker_symbol' => $company->ticker_symbol,
+                    'sec_cik_number' => $company->sec_cik_number,
+                    'sic_code' => $company->sic_code,
+                    'sic_description' => $company->sic_description,
                     'admin_approval_flag' => $company->admin_approval_flag,
                 ],
             ], 200);
         } catch (\Exception $e) {
             // Log the error for debugging
             \Log::error('Request Approval API Error: '.$e->getMessage(), [
-                'company_id' => $id,
+                'request' => $request->all(),
+                'id' => $id,
                 'trace' => $e->getTraceAsString(),
             ]);
 
             return response()->json([
                 'success' => false,
                 'error' => 'Internal server error',
+                'message' => $e->getMessage(),
             ], 500);
         }
     }

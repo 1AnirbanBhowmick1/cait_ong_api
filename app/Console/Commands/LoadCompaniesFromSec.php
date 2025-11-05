@@ -25,7 +25,7 @@ class LoadCompaniesFromSec extends Command
      *
      * @var string
      */
-    protected $description = 'Load companies from SEC into companies_v1 table. Use --oil-gas-only to load only oil & gas companies with full details.';
+    protected $description = 'Load companies from SEC into companies_v1 table. Without flags: loads ALL companies with minimal info (name, ticker, CIK). Use --oil-gas-only to filter and load only oil & gas companies with full details.';
 
     /**
      * Execute the console command.
@@ -59,43 +59,68 @@ class LoadCompaniesFromSec extends Command
             $this->info("Found {$totalCompanies} companies to load (basic info only)");
             $this->newLine();
 
-            $bar = $this->output->createProgressBar($totalCompanies);
+            // Load all existing companies from DB once (to avoid repeated DB queries)
+            $this->info("Loading existing companies from database...");
+            $existingTickers = Company::whereNotNull('ticker_symbol')
+                ->pluck('ticker_symbol')
+                ->toArray();
+            
+            $existingCiks = Company::whereNotNull('sec_cik_number')
+                ->pluck('sec_cik_number')
+                ->toArray();
+            
+            // Convert to arrays for faster lookup
+            $existingTickersSet = array_flip($existingTickers);
+            $existingCiksSet = array_flip($existingCiks);
+            
+            $initialCount = count($companies);
+            
+            // Filter out companies that already exist (in-memory check, no DB queries)
+            $newCompanies = array_filter($companies, function($company) use ($existingTickersSet, $existingCiksSet) {
+                $ticker = $company['ticker_symbol'] ?? null;
+                $cik = $company['sec_cik_number'] ?? null;
+                
+                // Skip if ticker or CIK already exists in database
+                if ($ticker && isset($existingTickersSet[$ticker])) {
+                    return false;
+                }
+                if ($cik && isset($existingCiksSet[$cik])) {
+                    return false;
+                }
+                return true;
+            });
+            
+            $skippedCount = $initialCount - count($newCompanies);
+            if ($skippedCount > 0) {
+                $this->info("Skipping {$skippedCount} companies that already exist in database");
+            }
+            
+            if (count($newCompanies) === 0) {
+                $this->info('No new companies to add. All companies are already in database.');
+                return 0;
+            }
+            
+            $this->info("Adding " . count($newCompanies) . " new companies...");
+            $this->newLine();
+
+            $bar = $this->output->createProgressBar(count($newCompanies));
             $bar->start();
 
             $loaded = 0;
-            $skipped = 0;
             $errors = 0;
 
-            // Process one company at a time
-            foreach ($companies as $companyData) {
+            // Process only new companies
+            foreach ($newCompanies as $companyData) {
                 try {
-                    // Check if company already exists
-                    $existing = Company::where('ticker_symbol', $companyData['ticker_symbol'])
-                        ->orWhere('sec_cik_number', $companyData['sec_cik_number'])
-                        ->first();
-
-                    if ($existing) {
-                        // Update basic info if exists
-                        $existing->update([
-                            'company_name' => $companyData['company_name'],
-                            'ticker_symbol' => $companyData['ticker_symbol'],
-                            'sec_cik_number' => $companyData['sec_cik_number'],
-                        ]);
-                        $skipped++;
-                    } else {
-                        // Create new company with only basic info
-                        // Note: sic_code and sic_description are required fields, so we set empty strings
-                        Company::create([
-                            'company_name' => $companyData['company_name'],
-                            'ticker_symbol' => $companyData['ticker_symbol'],
-                            'sec_cik_number' => $companyData['sec_cik_number'],
-                            'sic_code' => '', // Empty until extracted
-                            'sic_description' => '', // Empty until extracted
-                            'extraction_flag' => false, // Not extracted yet
-                        ]);
-                        $loaded++;
-                    }
-
+                    // Create new company with only basic info (minimal fields)
+                    Company::create([
+                        'company_name' => $companyData['company_name'],
+                        'ticker_symbol' => $companyData['ticker_symbol'],
+                        'sec_cik_number' => $companyData['sec_cik_number'],
+                        // sic_code, sic_description, entity_type remain NULL until extracted
+                        'extraction_flag' => false, // Not extracted yet
+                    ]);
+                    $loaded++;
                     $bar->advance();
                 } catch (\Exception $e) {
                     $errors++;
@@ -112,7 +137,9 @@ class LoadCompaniesFromSec extends Command
             $this->newLine(2);
 
             $this->info("✓ Loaded: {$loaded} new companies");
-            $this->info("✓ Updated: {$skipped} existing companies");
+            if ($skippedCount > 0) {
+                $this->info("✓ Skipped: {$skippedCount} existing companies (no changes needed)");
+            }
             if ($errors > 0) {
                 $this->warn("⚠ Errors: {$errors} companies");
             }
@@ -169,16 +196,15 @@ class LoadCompaniesFromSec extends Command
 
             // Load all existing companies from DB once (to avoid repeated DB queries)
             // This includes both ticker symbols and CIK numbers for matching
+            // Only skip companies that have been fully extracted (have sic_code populated)
             $this->info("Loading existing companies from database...");
             $existingTickers = Company::whereNotNull('ticker_symbol')
-                ->where('sic_code', '!=', '')
-                ->where('sic_code', '!=', null)
+                ->whereNotNull('sic_code')
                 ->pluck('ticker_symbol')
                 ->toArray();
             
             $existingCiks = Company::whereNotNull('sec_cik_number')
-                ->where('sic_code', '!=', '')
-                ->where('sic_code', '!=', null)
+                ->whereNotNull('sic_code')
                 ->pluck('sec_cik_number')
                 ->toArray();
             
@@ -321,10 +347,10 @@ class LoadCompaniesFromSec extends Command
             $this->info('Oil & Gas companies loaded successfully with full details!');
             
             // Show total count (companies with sic_code populated, which means they've been processed)
-            $totalInDb = Company::whereNotNull('sic_code')
-                ->where('sic_code', '!=', '')
-                ->count();
-            $this->info("Total processed companies in database: {$totalInDb}");
+            $totalInDb = Company::whereNotNull('sic_code')->count();
+            $totalBasic = Company::count();
+            $this->info("Total companies in database: {$totalBasic}");
+            $this->info("Total companies with full details: {$totalInDb}");
 
             return 0;
         } catch (\Exception $e) {
