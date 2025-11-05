@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -12,7 +13,9 @@ return new class extends Migration
     public function up(): void
     {
         if (!Schema::hasTable('metric_value')) {
-            Schema::create('metric_value', function (Blueprint $table) {
+            $isPostgres = DB::getDriverName() !== 'sqlite';
+
+            Schema::create('metric_value', function (Blueprint $table) use ($isPostgres) {
                 $table->id('metric_value_id');
                 $table->unsignedBigInteger('company_id');
                 $table->unsignedBigInteger('metric_id');
@@ -30,9 +33,18 @@ return new class extends Migration
                 $table->string('source_location')->nullable();
                 $table->timestamp('created_at')->nullable();
 
-                $table->foreign('company_id')->references('company_id')->on('companies');
-                $table->foreign('metric_id')->references('metric_id')->on('metric_definition');
-                $table->foreign('source_document_id')->references('source_document_id')->on('source_document');
+                // Add foreign keys only for PostgreSQL (skip for SQLite in tests)
+                if ($isPostgres) {
+                    if (Schema::hasTable('companies')) {
+                        $table->foreign('company_id')->references('company_id')->on('companies');
+                    }
+                    if (Schema::hasTable('metric_definition')) {
+                        $table->foreign('metric_id')->references('metric_id')->on('metric_definition');
+                    }
+                    if (Schema::hasTable('source_document')) {
+                        $table->foreign('source_document_id')->references('source_document_id')->on('source_document');
+                    }
+                }
             });
         }
     }

@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -25,7 +26,10 @@ return new class extends Migration
                 $table->decimal('extraction_confidence_score', 5, 2)->nullable();
                 $table->timestamps();
 
-                $table->foreign('company_id')->references('company_id')->on('companies');
+                // Add foreign key only for PostgreSQL (skip for SQLite in tests)
+                if (DB::getDriverName() !== 'sqlite' && Schema::hasTable('companies')) {
+                    $table->foreign('company_id')->references('company_id')->on('companies');
+                }
             });
         }
     }
