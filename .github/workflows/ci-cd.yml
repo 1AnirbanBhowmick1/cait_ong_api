@@ -48,21 +48,34 @@ jobs:
         node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
 
-    - name: Copy environment file
-      run: cp docker.env .env
-
-    - name: Configure test environment
+    - name: Create environment file
       run: |
-        echo "APP_ENV=testing" >> .env
-        echo "DB_CONNECTION=pgsql" >> .env
-        echo "DB_HOST=localhost" >> .env
-        echo "DB_PORT=5432" >> .env
-        echo "DB_DATABASE=testing" >> .env
-        echo "DB_USERNAME=test" >> .env
-        echo "DB_PASSWORD=password" >> .env
-        echo "DB_SCHEMA=public" >> .env
-        echo "REDIS_HOST=localhost" >> .env
-        echo "REDIS_PORT=6379" >> .env
+        cat > .env << EOF
+        APP_NAME=CaiTong
+        APP_ENV=testing
+        APP_KEY=
+        APP_DEBUG=false
+        APP_URL=http://localhost
+        
+        LOG_CHANNEL=stack
+        LOG_LEVEL=debug
+        
+        DB_CONNECTION=pgsql
+        DB_HOST=localhost
+        DB_PORT=5432
+        DB_DATABASE=testing
+        DB_USERNAME=test
+        DB_PASSWORD=password
+        DB_SCHEMA=public
+        
+        CACHE_DRIVER=redis
+        QUEUE_CONNECTION=redis
+        SESSION_DRIVER=redis
+        
+        REDIS_HOST=localhost
+        REDIS_PORT=6379
+        REDIS_PASSWORD=null
+        EOF
 
     - name: Install Composer dependencies
       run: composer install --no-progress --prefer-dist --optimize-autoloader
