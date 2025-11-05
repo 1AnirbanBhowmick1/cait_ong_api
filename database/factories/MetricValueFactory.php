@@ -35,7 +35,6 @@ class MetricValueFactory extends Factory
             'extraction_confidence_score' => fake()->randomFloat(2, 0.75, 0.99),
             'source_location' => fake()->optional()->word(),
             'created_at' => now(),
-            'updated_at' => now(),
         ];
     }
 }
