@@ -25,7 +25,7 @@ class LoadCompaniesFromSec extends Command
      *
      * @var string
      */
-    protected $description = 'Load companies from SEC into companies_v1 table. Without flags: loads ALL companies with minimal info (name, ticker, CIK). Use --oil-gas-only to filter and load only oil & gas companies with full details.';
+    protected $description = 'Load companies from SEC into companies table. Without flags: loads ALL companies with minimal info (name, ticker, CIK). Use --oil-gas-only to filter and load only oil & gas companies with full details.';
 
     /**
      * Execute the console command.

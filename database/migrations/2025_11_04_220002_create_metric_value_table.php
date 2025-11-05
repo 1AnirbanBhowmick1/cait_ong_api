@@ -30,7 +30,7 @@ return new class extends Migration
                 $table->string('source_location')->nullable();
                 $table->timestamp('created_at')->nullable();
 
-                $table->foreign('company_id')->references('company_id')->on('companies_v1');
+                $table->foreign('company_id')->references('company_id')->on('companies');
                 $table->foreign('metric_id')->references('metric_id')->on('metric_definition');
                 $table->foreign('source_document_id')->references('source_document_id')->on('source_document');
             });

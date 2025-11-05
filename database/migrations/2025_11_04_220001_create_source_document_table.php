@@ -25,7 +25,7 @@ return new class extends Migration
                 $table->decimal('extraction_confidence_score', 5, 2)->nullable();
                 $table->timestamps();
 
-                $table->foreign('company_id')->references('company_id')->on('companies_v1');
+                $table->foreign('company_id')->references('company_id')->on('companies');
             });
         }
     }
