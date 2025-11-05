@@ -11,14 +11,36 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Only alter table if it exists (for CI/CD where table may not exist)
-        if (Schema::hasTable('companies_v1')) {
+        // Create table if it doesn't exist (for CI/CD and tests)
+        if (!Schema::hasTable('companies_v1')) {
+            Schema::create('companies_v1', function (Blueprint $table) {
+                $table->id('company_id');
+                $table->string('company_name');
+                $table->string('ticker_symbol', 10);
+                $table->string('sec_cik_number', 20)->nullable();
+                $table->string('sic_code')->nullable();
+                $table->text('sic_description')->nullable();
+                $table->string('entity_type')->nullable();
+                $table->boolean('extraction_flag')->default(false);
+                $table->string('admin_approval_flag', 100)->nullable();
+                // Additional fields from factory
+                $table->string('company_type')->nullable();
+                $table->boolean('status')->default(true);
+                $table->timestamps();
+            });
+        } else {
+            // Table exists, just alter the columns to make them nullable
             Schema::table('companies_v1', function (Blueprint $table) {
-                // Make sic_code and sic_description nullable
-                $table->string('sic_code')->nullable()->change();
-                $table->text('sic_description')->nullable()->change();
-                // entity_type should also be nullable
-                $table->string('entity_type')->nullable()->change();
+                // Only alter if columns exist (for backward compatibility)
+                if (Schema::hasColumn('companies_v1', 'sic_code')) {
+                    $table->string('sic_code')->nullable()->change();
+                }
+                if (Schema::hasColumn('companies_v1', 'sic_description')) {
+                    $table->text('sic_description')->nullable()->change();
+                }
+                if (Schema::hasColumn('companies_v1', 'entity_type')) {
+                    $table->string('entity_type')->nullable()->change();
+                }
             });
         }
     }
