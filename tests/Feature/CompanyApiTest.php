@@ -2,11 +2,10 @@
 
 namespace Tests\Feature;
 
-
-use Tests\TestCase;
 use App\Models\Company;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
+use Tests\TestCase;
 
 class CompanyApiTest extends TestCase
 {
@@ -37,9 +36,9 @@ class CompanyApiTest extends TestCase
                         'ticker_symbol',
                         'company_type',
                         'status',
-                        'created_at'
-                    ]
-                ]
+                        'created_at',
+                    ],
+                ],
             ]);
 
         // Default active_only=true should only return active companies
@@ -64,13 +63,13 @@ class CompanyApiTest extends TestCase
         Company::factory()->create([
             'company_name' => 'Diamondback Energy, Inc.',
             'ticker_symbol' => 'FANG',
-            'status' => true
+            'status' => true,
         ]);
 
         Company::factory()->create([
             'company_name' => 'Exxon Mobil Corporation',
             'ticker_symbol' => 'XOM',
-            'status' => true
+            'status' => true,
         ]);
 
         // Search by company name
@@ -109,7 +108,7 @@ class CompanyApiTest extends TestCase
         $response = $this->getJson('/api/companies?limit=-5');
         $response->assertStatus(400)
             ->assertJson([
-                'error' => 'Invalid parameters'
+                'error' => 'Invalid parameters',
             ]);
 
         $response = $this->getJson('/api/companies?offset=-1');
@@ -161,4 +160,3 @@ class CompanyApiTest extends TestCase
         $this->assertEquals(0, $response3->json('meta.total'));
     }
 }
-

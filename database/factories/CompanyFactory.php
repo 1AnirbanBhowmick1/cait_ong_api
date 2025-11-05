@@ -5,7 +5,6 @@ namespace Database\Factories;
 use App\Models\Company;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Company>
  */
@@ -21,7 +20,7 @@ class CompanyFactory extends Factory
     public function definition(): array
     {
         $companyTypes = ['upstream', 'integrated', 'midstream', 'downstream'];
-        
+
         return [
             'company_name' => fake()->company(),
             'ticker_symbol' => strtoupper(fake()->lexify('????')),
@@ -53,4 +52,3 @@ class CompanyFactory extends Factory
         ]);
     }
 }
-

@@ -2,12 +2,12 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
 use App\Models\Company;
 use App\Models\MetricDefinition;
 use App\Models\MetricValue;
 use App\Models\SourceDocument;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class ConfidenceApiTest extends TestCase
 {
@@ -62,12 +62,12 @@ class ConfidenceApiTest extends TestCase
                         'source_url',
                         'extraction_method',
                         'review_hint',
-                    ]
-                ]
+                    ],
+                ],
             ]);
 
         $data = $response->json();
-        
+
         // Default threshold is 0.8, so 2 records should match
         $this->assertEquals(2, $data['meta']['total']);
         $this->assertEquals(0.8, $data['meta']['threshold']);
@@ -101,7 +101,7 @@ class ConfidenceApiTest extends TestCase
 
         $response->assertStatus(200);
         $data = $response->json();
-        
+
         // Only records below 0.6 should match
         $this->assertEquals(2, $data['meta']['total']);
         $this->assertEquals(0.6, $data['meta']['threshold']);
@@ -130,7 +130,7 @@ class ConfidenceApiTest extends TestCase
 
         $response->assertStatus(200);
         $data = $response->json();
-        
+
         $this->assertEquals(1, $data['meta']['total']);
         $this->assertEquals($company1->company_id, $data['data'][0]['company_id']);
     }
@@ -159,7 +159,7 @@ class ConfidenceApiTest extends TestCase
 
         $response->assertStatus(200);
         $data = $response->json();
-        
+
         $this->assertEquals(1, $data['meta']['total']);
         $this->assertEquals('2024-12-31', $data['data'][0]['period_end_date']);
     }
@@ -191,7 +191,7 @@ class ConfidenceApiTest extends TestCase
 
         $response->assertStatus(200);
         $data = $response->json();
-        
+
         $this->assertEquals(1, $data['meta']['total']);
     }
 
@@ -223,7 +223,7 @@ class ConfidenceApiTest extends TestCase
 
         $response->assertStatus(200);
         $data = $response->json('data');
-        
+
         // Should be sorted lowest to highest
         $this->assertEquals(0.45, $data[0]['extraction_confidence_score']);
         $this->assertEquals(0.65, $data[1]['extraction_confidence_score']);
@@ -252,7 +252,7 @@ class ConfidenceApiTest extends TestCase
 
         $response->assertStatus(200);
         $data = $response->json('data');
-        
+
         // Should be sorted highest to lowest
         $this->assertEquals(0.65, $data[0]['extraction_confidence_score']);
         $this->assertEquals(0.45, $data[1]['extraction_confidence_score']);
@@ -274,7 +274,7 @@ class ConfidenceApiTest extends TestCase
 
         $response->assertStatus(200);
         $data = $response->json();
-        
+
         $this->assertEquals(5, $data['meta']['limit']);
         $this->assertEquals(0, $data['meta']['offset']);
         $this->assertEquals(10, $data['meta']['total']);
@@ -298,7 +298,7 @@ class ConfidenceApiTest extends TestCase
 
         $response->assertStatus(200);
         $data = $response->json('data');
-        
+
         $this->assertNotEmpty($data[0]['review_hint']);
         $this->assertStringContainsString('OCR', $data[0]['review_hint']);
     }
@@ -326,7 +326,7 @@ class ConfidenceApiTest extends TestCase
 
             $response = $this->getJson('/api/confidence');
             $data = $response->json('data');
-            
+
             $item = collect($data)->firstWhere('metric_value_id', $metric->metric_value_id);
             $this->assertNotNull($item);
             $this->assertStringContainsString($case['expectedPhrase'], $item['review_hint']);
@@ -353,7 +353,7 @@ class ConfidenceApiTest extends TestCase
 
         $response->assertStatus(200);
         $data = $response->json('data');
-        
+
         $this->assertEquals(5000, $data[0]['original_value']);
         $this->assertEquals('bbl', $data[0]['original_unit']);
         $this->assertEquals(5, $data[0]['normalized_value']); // 5000 bbl = 5 mbbl
@@ -367,7 +367,7 @@ class ConfidenceApiTest extends TestCase
 
         $response->assertStatus(400)
             ->assertJson([
-                'error' => 'Invalid parameters'
+                'error' => 'Invalid parameters',
             ]);
     }
 
@@ -392,7 +392,7 @@ class ConfidenceApiTest extends TestCase
 
         $response->assertStatus(200);
         $data = $response->json('data');
-        
+
         $this->assertEquals('https://www.sec.gov/test', $data[0]['source_url']);
     }
 
@@ -412,8 +412,7 @@ class ConfidenceApiTest extends TestCase
 
         $response->assertStatus(200);
         $data = $response->json('data');
-        
+
         $this->assertStringContainsString('Critical priority', $data[0]['review_hint']);
     }
 }
-

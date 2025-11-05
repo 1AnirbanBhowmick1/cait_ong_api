@@ -2,8 +2,8 @@
 
 namespace Tests\Unit;
 
-use Tests\TestCase;
 use App\Services\UnitConverterService;
+use Tests\TestCase;
 
 class UnitConverterServiceTest extends TestCase
 {
@@ -12,7 +12,7 @@ class UnitConverterServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->converter = new UnitConverterService();
+        $this->converter = new UnitConverterService;
     }
 
     /** @test */
@@ -122,4 +122,3 @@ class UnitConverterServiceTest extends TestCase
         $this->assertEquals('bbl', $result['unit']);
     }
 }
-

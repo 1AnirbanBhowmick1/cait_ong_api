@@ -11,16 +11,15 @@ use Illuminate\Support\Facades\Validator;
 class MetricsController extends Controller
 {
     protected $unitConverter;
-    
+
     public function __construct(UnitConverterService $unitConverter)
     {
         $this->unitConverter = $unitConverter;
     }
-    
+
     /**
      * Display a listing of metrics for a company
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function index(Request $request)
@@ -45,7 +44,7 @@ class MetricsController extends Controller
             if ($validator->fails()) {
                 return response()->json([
                     'error' => 'Invalid parameters',
-                    'messages' => $validator->errors()
+                    'messages' => $validator->errors(),
                 ], 400);
             }
 
@@ -64,7 +63,7 @@ class MetricsController extends Controller
             $sortBy = $request->input('sort_by', 'period_end_date:desc');
 
             // Handle period parameter (convert Q4-2024 to date)
-            if ($period && !$periodEndDate) {
+            if ($period && ! $periodEndDate) {
                 $periodEndDate = $this->convertPeriodToDate($period);
             }
 
@@ -72,11 +71,11 @@ class MetricsController extends Controller
             $metricsArray = null;
             if ($metrics) {
                 $metricsArray = array_map('trim', explode(',', $metrics));
-                
+
                 // Validate metric names
                 if (empty($metricsArray)) {
                     return response()->json([
-                        'error' => 'Invalid metric parameter'
+                        'error' => 'Invalid metric parameter',
                     ], 422);
                 }
             }
@@ -105,7 +104,7 @@ class MetricsController extends Controller
                     'metric_value.source_document_id',
                     'source_document.source_url',
                     DB::raw('NULL as source_location'),
-                    'metric_value.created_at'
+                    'metric_value.created_at',
                 ])
                 ->join('metric_definition', 'metric_value.metric_id', '=', 'metric_definition.metric_id')
                 ->join('companies', 'metric_value.company_id', '=', 'companies.company_id')
@@ -113,33 +112,33 @@ class MetricsController extends Controller
 
             // Apply filters - use fully qualified column name
             $query->where('metric_value.company_id', $companyId);
-            
+
             if ($periodEndDate) {
                 $query->byPeriodEndDate($periodEndDate);
             }
-            
+
             if ($metricsArray) {
                 $query->whereIn('metric_definition.metric_name_internal', $metricsArray);
             }
-            
+
             if ($basin) {
                 $query->byBasin($basin);
             }
-            
+
             if ($segment) {
                 $query->bySegment($segment);
             }
-            
+
             // Note: asset_name column doesn't exist in current schema
             // if ($assetName) {
             //     $query->byAsset($assetName);
             // }
-            
+
             // Note: gross_or_net column doesn't exist in current schema
             // if ($grossOrNet) {
             //     $query->byGrossOrNet($grossOrNet);
             // }
-            
+
             if ($confidenceMin !== null) {
                 $query->byMinConfidence($confidenceMin);
             }
@@ -165,7 +164,7 @@ class MetricsController extends Controller
                     $row->original_unit,
                     $row->metric_name_internal
                 );
-                
+
                 return [
                     'metric_value_id' => $row->metric_value_id,
                     'company_id' => $row->company_id,
@@ -195,61 +194,61 @@ class MetricsController extends Controller
                 'meta' => [
                     'limit' => $limit,
                     'offset' => $offset,
-                    'total' => $total
+                    'total' => $total,
                 ],
-                'data' => $data
+                'data' => $data,
             ], 200);
-            
+
         } catch (\Exception $e) {
             // Log the error for debugging
-            \Log::error('Metrics API Error: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString()
+            \Log::error('Metrics API Error: '.$e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
             ]);
-            
+
             return response()->json([
-                'error' => 'Internal server error'
+                'error' => 'Internal server error',
             ], 500);
         }
     }
-    
+
     /**
      * Convert period string (e.g., "2024-Q4") to end date
      */
     private function convertPeriodToDate(string $period): string
     {
         preg_match('/^(\d{4})-Q([1-4])$/', $period, $matches);
-        
-        if (!$matches) {
+
+        if (! $matches) {
             return '';
         }
-        
+
         $year = $matches[1];
         $quarter = $matches[2];
-        
+
         $endDates = [
             '1' => "$year-03-31",
             '2' => "$year-06-30",
             '3' => "$year-09-30",
             '4' => "$year-12-31",
         ];
-        
+
         return $endDates[$quarter];
     }
-    
+
     /**
      * Parse sort_by parameter
      */
     private function parseSortBy(string $sortBy): array
     {
         $parts = explode(':', $sortBy);
-        
+
         if (count($parts) !== 2) {
             return ['period_end_date', 'desc'];
         }
-        
+
         $field = $parts[0];
         $direction = strtolower($parts[1]);
-        
+
         // Whitelist allowed sort fields
         $allowedFields = [
             'period_end_date',
@@ -260,23 +259,22 @@ class MetricsController extends Controller
             'basin_name',
             'segment_name',
         ];
-        
-        if (!in_array($field, $allowedFields)) {
+
+        if (! in_array($field, $allowedFields)) {
             $field = 'period_end_date';
         }
-        
-        if (!in_array($direction, ['asc', 'desc'])) {
+
+        if (! in_array($direction, ['asc', 'desc'])) {
             $direction = 'desc';
         }
-        
+
         // Handle qualified field names for sorting
         if (in_array($field, ['metric_name_internal'])) {
-            $field = 'metric_definition.' . $field;
-        } elseif (!in_array($field, ['created_at'])) {
-            $field = 'metric_value.' . $field;
+            $field = 'metric_definition.'.$field;
+        } elseif (! in_array($field, ['created_at'])) {
+            $field = 'metric_value.'.$field;
         }
-        
+
         return [$field, $direction];
     }
 }
-
