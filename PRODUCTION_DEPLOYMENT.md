@@ -302,41 +302,6 @@ curl -I https://yourdomain.com/api/companies
 docker-compose -f docker-compose.prod.yml exec app php artisan migrate:status
 ```
 
-## 🔄 CI/CD Pipeline
-
-### **GitHub Actions Production Deployment**
-```yaml
-# .github/workflows/deploy-prod.yml
-name: Deploy to Production
-
-on:
-  push:
-    branches: [ main ]
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    environment: production
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Deploy to server
-      uses: appleboy/ssh-action@v1.0.0
-      with:
-        host: ${{ secrets.PROD_HOST }}
-        username: ${{ secrets.PROD_USER }}
-        key: ${{ secrets.PROD_SSH_KEY }}
-        script: |
-          cd /path/to/caitong_v1
-          git pull origin main
-          docker-compose -f docker-compose.prod.yml build app
-          docker-compose -f docker-compose.prod.yml up -d
-          docker-compose -f docker-compose.prod.yml exec app php artisan migrate --force
-          docker-compose -f docker-compose.prod.yml exec app php artisan cache:clear
-```
-
 ## 🛡️ Security Checklist
 
 - [ ] SSL certificate installed and configured
